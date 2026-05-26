@@ -28,33 +28,37 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const game = new Phaser.Game(config);
 
-const requestFullscreenOnce = () => {
-  const target =
-    (game.canvas.parentElement as HTMLElement | null) ?? game.canvas;
-  if (document.fullscreenElement) return;
-  try {
-    if (target.requestFullscreen) {
-      target.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
-    } else {
-      const webkit = (
-        target as unknown as { webkitRequestFullscreen?: () => void }
-      ).webkitRequestFullscreen;
-      if (webkit) webkit.call(target);
+const inIframe = window.self !== window.top;
+
+if (!inIframe) {
+  const requestFullscreenOnce = () => {
+    const target =
+      (game.canvas.parentElement as HTMLElement | null) ?? game.canvas;
+    if (document.fullscreenElement) return;
+    try {
+      if (target.requestFullscreen) {
+        target.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+      } else {
+        const webkit = (
+          target as unknown as { webkitRequestFullscreen?: () => void }
+        ).webkitRequestFullscreen;
+        if (webkit) webkit.call(target);
+      }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore
-  }
-};
+  };
 
-const firstTouchHandler = () => {
-  requestFullscreenOnce();
-  game.canvas.removeEventListener("pointerdown", firstTouchHandler);
-  game.canvas.removeEventListener("touchstart", firstTouchHandler);
-};
+  const firstTouchHandler = () => {
+    requestFullscreenOnce();
+    game.canvas.removeEventListener("pointerdown", firstTouchHandler);
+    game.canvas.removeEventListener("touchstart", firstTouchHandler);
+  };
 
-game.canvas.addEventListener("pointerdown", firstTouchHandler, {
-  passive: true,
-});
-game.canvas.addEventListener("touchstart", firstTouchHandler, {
-  passive: true,
-});
+  game.canvas.addEventListener("pointerdown", firstTouchHandler, {
+    passive: true,
+  });
+  game.canvas.addEventListener("touchstart", firstTouchHandler, {
+    passive: true,
+  });
+}
