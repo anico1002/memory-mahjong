@@ -19,6 +19,11 @@ export class BootScene extends Phaser.Scene {
     this.load.image("btn_retry", "/assets/retry-btn.png");
     this.load.image("btn_nextlevel", "/assets/nextlevel-btn.png");
 
+    this.load.image("star", "/assets/star.png");
+    this.load.image("star_disabled", "/assets/star-disabled.png");
+
+    this.load.image("powerups", "/assets/powerups.png");
+
     this.load.image("empty_tile", "/assets/tiles/empty-tile.png");
     this.load.image("mystery_tile", "/assets/tiles/mystery.png");
 

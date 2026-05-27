@@ -66,6 +66,7 @@ export class UIScene extends Phaser.Scene {
   private timerEvent: Phaser.Time.TimerEvent | null = null;
   private timerTextMain!: Phaser.GameObjects.Text;
   private timerTextShadow!: Phaser.GameObjects.Text;
+  private hudImage!: Phaser.GameObjects.Image;
 
   private progressBar!: Phaser.GameObjects.Graphics;
   private progressBarMaxWidth = 0;
@@ -116,6 +117,7 @@ export class UIScene extends Phaser.Scene {
     const scale = targetW / Math.max(1, hud.width);
     hud.setScale(scale);
     hud.setDepth(DEPTH.HUD_BG);
+    this.hudImage = hud;
 
     const barW = hud.displayWidth;
     const barH = hud.displayHeight;
@@ -218,6 +220,15 @@ export class UIScene extends Phaser.Scene {
 
     this.progressBar = this.add.graphics();
     this.progressBar.setDepth(DEPTH.HUD_TEXT);
+
+    // Skip level — invisible zone over level number (left side)
+    const skipZone = this.add.zone(levelX, mainBarCenterY, barW * LEFT_DIVIDER_RATIO, mainBarH);
+    skipZone.setInteractive();
+    skipZone.setDepth(DEPTH.HUD_TEXT + 5);
+    skipZone.on("pointerup", () => {
+      const gameScene = this.scene.get("GameScene");
+      gameScene.events.emit("debug-skip-level");
+    });
 
     // Restart zone (right side)
     const restartZone = this.add.zone(
@@ -345,6 +356,31 @@ export class UIScene extends Phaser.Scene {
     this.timerRemaining = Math.max(0, this.timerRemaining - seconds);
     this.refreshTimer();
     this.refreshProgress();
+
+    // Flash timer red
+    this.timerTextMain.setColor("#ff4444");
+    this.time.delayedCall(600, () => {
+      if (this.timerRemaining > 10) {
+        this.timerTextMain.setColor("#ffffff");
+      } else {
+        this.timerTextMain.setColor("#ff6b6b");
+      }
+    });
+
+    // Shake HUD
+    const restX = HUD.centerX;
+    this.hudImage.x = restX;
+    this.tweens.killTweensOf(this.hudImage);
+    this.tweens.chain({
+      targets: this.hudImage,
+      tweens: [
+        { x: restX - s(4), duration: 40, ease: "Sine.easeOut" },
+        { x: restX + s(3), duration: 40, ease: "Sine.easeInOut" },
+        { x: restX - s(2), duration: 40, ease: "Sine.easeInOut" },
+        { x: restX + s(1), duration: 40, ease: "Sine.easeInOut" },
+        { x: restX, duration: 40, ease: "Sine.easeIn" },
+      ],
+    });
 
     if (this.timerRemaining <= 0) {
       this.timerRunning = false;

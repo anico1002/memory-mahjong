@@ -102,7 +102,7 @@ export const SEQUENCE_BAR = {
 
 // --- Powerups zone (bottom of screen, reserved for future) ---
 
-const POWERUPS_HEIGHT = s(80);
+const POWERUPS_HEIGHT = s(110);
 const POWERUPS_TOP_Y = DESIGN_HEIGHT - SAFE_BOTTOM - POWERUPS_HEIGHT;
 
 export const POWERUPS = {

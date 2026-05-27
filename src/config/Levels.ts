@@ -22,7 +22,15 @@ export type TileKey =
   | "fish"
   | "pie"
   | "pizza"
-  | "soda";
+  | "soda"
+  | "apple"
+  | "charger"
+  | "horseshoe"
+  | "icecream"
+  | "lemon"
+  | "popcorn"
+  | "sandwich"
+  | "wool";
 
 export const ALL_TILE_KEYS: TileKey[] = [
   "cage",
@@ -49,6 +57,14 @@ export const ALL_TILE_KEYS: TileKey[] = [
   "pie",
   "pizza",
   "soda",
+  "apple",
+  "charger",
+  "horseshoe",
+  "icecream",
+  "lemon",
+  "popcorn",
+  "sandwich",
+  "wool",
 ];
 
 export const TILE_KEY_TO_FILE: Record<TileKey, string> = {
@@ -76,6 +92,14 @@ export const TILE_KEY_TO_FILE: Record<TileKey, string> = {
   pie: "pie.png",
   pizza: "tile-standard.png",
   soda: "tile-standard-1.png",
+  apple: "apple.png",
+  charger: "charger.png",
+  horseshoe: "horseshoe.png",
+  icecream: "icecream.png",
+  lemon: "lemon.png",
+  popcorn: "popcorn.png",
+  sandwich: "sandwich.png",
+  wool: "wool.png",
 };
 
 export interface LevelDef {
@@ -133,7 +157,12 @@ export function generateLevel(def: LevelDef): GeneratedLevel {
 
   const pool = shuffle(ALL_TILE_KEYS).slice(0, poolSize);
 
-  const gridKeys = shuffle(pool.slice(0, totalTiles));
+  // If grid is larger than pool, fill remaining slots with random repeats
+  const base = shuffle([...pool]);
+  while (base.length < totalTiles) {
+    base.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  const gridKeys = shuffle(base);
 
   const grid: GridTile[] = [];
   for (let row = 0; row < def.gridRows; row++) {

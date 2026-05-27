@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Memory Mahjong — Documento de Concepto</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  :root {
+    --primary: #2d6a4f;
+    --primary-deep: #1b4332;
+    --primary-soft: #52b788;
+    --accent: #e07b1f;
+    --accent-soft: #fff3e0;
+    --ink: #1a2a1a;
+    --muted: #6a7a6a;
+    --rule: #d8e0d8;
+    --bg-card: #f5faf5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.5;
+    font-size: 10.5pt;
+    margin: 0;
+    padding: 16mm 14mm;
+    max-width: 210mm;
+  }
+  header {
+    border-bottom: 2pt solid var(--primary-deep);
+    padding-bottom: 10pt;
+    margin-bottom: 16pt;
+  }
+  h1 {
+    font-size: 26pt;
+    line-height: 1.05;
+    margin: 0 0 4pt;
+    letter-spacing: -0.02em;
+    color: var(--primary-deep);
+    font-weight: 800;
+  }
+  .tagline {
+    font-size: 12pt;
+    color: var(--primary);
+    margin: 0 0 8pt;
+    font-style: italic;
+  }
+  .meta {
+    font-size: 9pt;
+    color: var(--muted);
+    margin: 0;
+    display: flex;
+    gap: 12pt;
+    flex-wrap: wrap;
+  }
+  .meta span { display: inline-flex; align-items: baseline; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  h2 {
+    font-size: 11pt;
+    margin: 18pt 0 6pt;
+    color: var(--primary-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    border-bottom: 1pt solid var(--rule);
+    padding-bottom: 2pt;
+  }
+  h3 {
+    font-size: 10.5pt;
+    margin: 10pt 0 3pt;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  p { margin: 0 0 6pt; }
+  ul { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  li strong { color: var(--primary-deep); }
+  .card {
+    background: var(--bg-card);
+    border-left: 3pt solid var(--primary);
+    padding: 8pt 12pt;
+    margin: 4pt 0 8pt;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .pill {
+    display: inline-block;
+    padding: 1pt 7pt;
+    border-radius: 8pt;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 8.5pt;
+    font-weight: 700;
+    margin-right: 3pt;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .cta {
+    margin: 14pt 0;
+    padding: 12pt 16pt;
+    background: var(--primary-deep);
+    color: #fff;
+    border-radius: 6pt;
+    display: flex;
+    flex-direction: column;
+    gap: 4pt;
+  }
+  .cta .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.7;
+  }
+  .cta a {
+    color: #fff;
+    font-weight: 700;
+    font-size: 13pt;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14pt;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin: 4pt 0 8pt;
+  }
+  th {
+    background: var(--primary-deep);
+    color: #fff;
+    padding: 4pt 8pt;
+    text-align: left;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 3pt 8pt;
+    border-bottom: 0.5pt solid var(--rule);
+  }
+  tr:nth-child(even) td { background: #f8faf8; }
+  .footer {
+    margin-top: 22pt;
+    padding-top: 10pt;
+    border-top: 1pt solid var(--rule);
+    font-size: 8.5pt;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+  @media print {
+    body { padding: 0; }
+    .pagebreak { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Memory Mahjong</h1>
+  <p class="tagline">Juego casual de memoria: memoriza las fichas del tablero y reprodúcelas en el orden correcto.</p>
+  <p class="meta">
+    <span><b>Tipo</b>&nbsp;·&nbsp;Casual / Memoria (una sola pantalla)</span>
+    <span><b>Plataforma</b>&nbsp;·&nbsp;Web mobile-first (Phaser 3)</span>
+    <span><b>Estado</b>&nbsp;·&nbsp;Prototipo jugable</span>
+    <span><b>Sesión</b>&nbsp;·&nbsp;~2-4 min por partida</span>
+  </p>
+</header>
+
+<h2>Concepto</h2>
+<p>
+  Un tablero de fichas estilo mahjong se presenta boca abajo. Al inicio del nivel, todas las fichas
+  se voltean revelando sus caras durante unos segundos. El jugador debe memorizar las posiciones
+  y, una vez ocultas, reproducir una secuencia específica tocando las fichas en el orden indicado
+  por la barra de objetivo. Cada error voltea la ficha tocada mostrando su cara durante 2 segundos
+  y aplica una <strong>penalización de tiempo</strong>. El doble reto: recordar dónde está cada
+  ficha Y mantener el orden de la secuencia bajo presión de tiempo.
+</p>
+
+<h2>Pilares de Diseño</h2>
+<div class="grid-2">
+  <div>
+    <h3>1. Memoria espacial + secuencial</h3>
+    <p>
+      El jugador ejercita dos tipos de memoria simultáneamente: recordar la posición de cada ficha
+      en el tablero (espacial) y reproducirlas en un orden específico (secuencial). Esta combinación
+      crea un desafío cognitivo más profundo que un simple memory match.
+    </p>
+  </div>
+  <div>
+    <h3>2. Presión temporal progresiva</h3>
+    <p>
+      El tiempo de memorización disminuye nivel a nivel (de 5s a 2.5s) mientras las secuencias
+      crecen. El timer crea urgencia sin ser punitivo en niveles iniciales, pero se vuelve
+      el factor decisivo en niveles avanzados.
+    </p>
+  </div>
+  <div>
+    <h3>3. Error informativo</h3>
+    <p>
+      Al fallar, la ficha se voltea mostrando qué había debajo. El jugador obtiene información
+      útil con cada error, convirtiendo los fallos en oportunidades de aprendizaje dentro
+      de la misma partida. Pero el coste en tiempo hace que abusar sea letal.
+    </p>
+  </div>
+  <div>
+    <h3>4. Lectura visual inmediata</h3>
+    <p>
+      Sin tutoriales ni explicaciones. Fichas de mahjong reconocibles, iconos claros, barra
+      de objetivo visible. Cualquier persona entiende la mecánica en 3 segundos: memoriza,
+      recuerda, toca en orden.
+    </p>
+  </div>
+</div>
+
+<h2>Flujo de Juego</h2>
+<div class="card">
+  <strong>3 fases por nivel:</strong>
+  <span class="pill">Entrada</span> Las fichas entran al tablero con animación.
+  <span class="pill">Memorizar</span> Todas se voltean cara arriba durante X segundos con cuenta atrás visible.
+  <span class="pill">Recordar</span> Las fichas se ocultan. El jugador toca en el orden de la secuencia objetivo. Timer activo.
+</div>
+
+<h2>Estructura de Niveles</h2>
+<table>
+  <tr><th>Nivel</th><th>Grid</th><th>Secuencia</th><th>Memorizar</th><th>Timer</th></tr>
+  <tr><td>1</td><td>3×3</td><td>3 fichas</td><td>5.0s</td><td>30s</td></tr>
+  <tr><td>2</td><td>3×4</td><td>3 fichas</td><td>5.0s</td><td>30s</td></tr>
+  <tr><td>3</td><td>3×4</td><td>4 fichas</td><td>4.5s</td><td>35s</td></tr>
+  <tr><td>4</td><td>4×4</td><td>4 fichas</td><td>4.5s</td><td>35s</td></tr>
+  <tr><td>5</td><td>4×4</td><td>5 fichas</td><td>4.0s</td><td>40s</td></tr>
+  <tr><td>6</td><td>4×5</td><td>5 fichas</td><td>4.0s</td><td>40s</td></tr>
+  <tr><td>7</td><td>4×5</td><td>6 fichas</td><td>3.5s</td><td>45s</td></tr>
+  <tr><td>8</td><td>5×5</td><td>6 fichas</td><td>3.0s</td><td>45s</td></tr>
+  <tr><td>9</td><td>5×5</td><td>7 fichas</td><td>3.0s</td><td>50s</td></tr>
+  <tr><td>10</td><td>5×5</td><td>8 fichas</td><td>2.5s</td><td>55s</td></tr>
+</table>
+
+<h2>Escalado de Dificultad</h2>
+<table>
+  <tr><th>Factor</th><th>Fácil (L1-3)</th><th>Medio (L4-6)</th><th>Difícil (L7-10)</th></tr>
+  <tr><td>Fichas en tablero</td><td>9-12</td><td>16-20</td><td>20-25</td></tr>
+  <tr><td>Longitud de secuencia</td><td>3-4</td><td>4-5</td><td>6-8</td></tr>
+  <tr><td>Tiempo de memorización</td><td>5.0s</td><td>4.0-4.5s</td><td>2.5-3.5s</td></tr>
+  <tr><td>Penalización por error</td><td>3s</td><td>3s</td><td>3s + bloqueo 2s</td></tr>
+  <tr><td>Fichas únicas</td><td>9-12</td><td>16-20</td><td>24+</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+
+<h2>Power-ups</h2>
+<div class="grid-2">
+  <div>
+    <h3>Llave <span class="pill">Peek</span></h3>
+    <p>
+      Voltea temporalmente una ficha a elección del jugador durante 1 segundo.
+      Ideal para confirmar una posición dudosa sin arriesgarse a un error.
+    </p>
+  </div>
+  <div>
+    <h3>Tijeras <span class="pill">Skip</span></h3>
+    <p>
+      Salta la ficha actual de la secuencia, marcándola como completada
+      automáticamente. Salva la partida cuando no recuerdas una posición.
+    </p>
+  </div>
+  <div>
+    <h3>Brújula <span class="pill">Hint</span></h3>
+    <p>
+      Destaca brevemente la ficha correcta siguiente con un pulso visual.
+      El jugador sabe dónde está, pero debe tocarla igualmente.
+    </p>
+  </div>
+  <div>
+    <h3>Bandera <span class="pill">Freeze</span></h3>
+    <p>
+      Congela el timer durante 5 segundos. Proporciona un respiro en
+      momentos de alta presión sin revelar información del tablero.
+    </p>
+  </div>
+</div>
+
+<h2>Progresión y Retención</h2>
+<div class="grid-2">
+  <div>
+    <h3>Sistema de Estrellas</h3>
+    <p>
+      1-3 estrellas por nivel basadas en errores cometidos y tiempo restante.
+      3 estrellas = 0 errores + más de 50% del tiempo sobrante.
+      Las estrellas acumuladas desbloquean mundos temáticos.
+    </p>
+    <h3>Combos</h3>
+    <p>
+      Aciertos consecutivos construyen un multiplicador de puntuación (2x-5x).
+      Feedback visual del combo visible sobre el tablero. Un error
+      reinicia el multiplicador a 1x.
+    </p>
+  </div>
+  <div>
+    <h3>Mundos Temáticos</h3>
+    <p>
+      Expansión a sets de fichas temáticos: animales, comida, emojis,
+      banderas. Cada mundo con estética propia: fondo, estilo de fichas,
+      efectos. Desbloqueo por acumulación de estrellas.
+    </p>
+    <h3>Retención a largo plazo</h3>
+    <ul>
+      <li><strong>Reto diario:</strong> nivel aleatorio con leaderboard global.</li>
+      <li><strong>Racha:</strong> jugar X días seguidos desbloquea power-ups.</li>
+      <li><strong>Coleccionables:</strong> sets de fichas limitados por temporada.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Mecánicas Futuras</h2>
+<ul>
+  <li><strong>Fichas especiales:</strong> bomba (revela fichas adyacentes al acertar), comodín (vale por cualquier ficha), hielo (requiere doble toque).</li>
+  <li><strong>Modo contrarreloj:</strong> secuencias infinitas con tiempo limitado. Velocidad creciente.</li>
+  <li><strong>Modo duelo:</strong> dos jugadores compiten por completar la misma secuencia en tableros espejados.</li>
+  <li><strong>Eventos temporales:</strong> fichas especiales de temporada (Halloween, Navidad) con mecánicas únicas.</li>
+</ul>
+
+<h2>Controles</h2>
+<p>
+  <strong>Mobile (principal):</strong> toque directo sobre las fichas del tablero. Feedback háptico
+  en aciertos (vibración corta) y errores (doble vibración). Las fichas se voltean con animación 3D
+  simulada (compresión horizontal + elevación).
+  <strong>Desktop:</strong> clic sobre las fichas. Mismo feedback visual.
+</p>
+
+<h2>Estética</h2>
+<ul>
+  <li><strong>Fichas:</strong> estilo mahjong clásico con iconos ilustrados. Sombra inferior que simula profundidad. Reverso con interrogación.</li>
+  <li><strong>Tablero:</strong> fondo verde texturizado con viñeta. Fichas sin separación visible (bordes se tocan).</li>
+  <li><strong>HUD:</strong> barra superior con nivel, timer con barra de progreso, indicadores de secuencia (pills).</li>
+  <li><strong>Animaciones:</strong> entrada en cascada diagonal, flip con elevación y sombra, shake en error, combo flotante.</li>
+  <li><strong>Tipografía:</strong> Lilita One en todo el juego.</li>
+</ul>
+
+<div class="cta">
+  <span class="label">Prototipo jugable</span>
+  <a href="https://memory-mahjong.vercel.app/preview.html">memory-mahjong.vercel.app/preview</a>
+</div>
+
+<h2>Stack Técnico</h2>
+<p>
+  Phaser 3 (WebGL) · Vite · TypeScript · Viewport líquido 390×844 · LocalStorage para progreso · Deploy Vercel · PWA-ready
+</p>
+
+<div class="footer">
+  <span>Memory Mahjong — Documento de concepto v1.0</span>
+  <span>Mayo 2026</span>
+</div>
+
+</body>
+</html>

@@ -7,6 +7,7 @@ import {
   FLIP,
   GRID,
   HUD,
+  POWERUPS,
   RENDER_SCALE,
   SEQUENCE_BAR,
   TILE_ASPECT,
@@ -38,9 +39,9 @@ interface ActiveTile {
 
 const PENALTY_SECONDS = 3;
 
-// Grid tile spacing — zero gap, tiles touching
-const COL_GAP_PX = 0;
-const ROW_GAP_PX = 0;
+// Grid tile spacing — negative to compensate transparent shadow padding in tile images
+const COL_GAP_PX = -20;
+const ROW_GAP_PX = -27;
 
 // Sequence container styling
 const SEQ_CONTAINER_PAD = 12;
@@ -122,6 +123,7 @@ export class GameScene extends Phaser.Scene {
 
     this.computeGridMetrics();
     this.buildSequenceBar();
+    this.buildPowerupsBar();
     this.buildGrid();
     this.animateEntry();
 
@@ -133,9 +135,11 @@ export class GameScene extends Phaser.Scene {
 
     const uiScene = this.scene.get("UIScene");
     uiScene.events.on("timer-expired", this.onTimerExpired, this);
+    this.events.on("debug-skip-level", this.onDebugSkipLevel, this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       uiScene.events.off("timer-expired", this.onTimerExpired, this);
+      this.events.off("debug-skip-level", this.onDebugSkipLevel, this);
       this.scene.stop("UIScene");
     });
 
@@ -152,21 +156,32 @@ export class GameScene extends Phaser.Scene {
 
     const totalZoneH = GRID.bottomY - SEQUENCE_BAR.topY;
     const gridZoneW = GRID.maxWidth;
-    const colGap = COL_GAP_PX * RENDER_SCALE;
-    const rowGap = ROW_GAP_PX * RENDER_SCALE;
 
     // Reserve space for sequence container
     const gridFraction = 0.78;
     const gridZoneH = totalZoneH * gridFraction;
 
-    // Fit tiles with fixed small gaps
-    const fitW = (gridZoneW - (cols - 1) * colGap) / cols;
-    const fitTileH = (gridZoneH - (rows - 1) * rowGap) / rows;
+    // Max tile size = what a 3x3 grid (level 1) produces
+    const maxTileW = Math.floor(Math.min(gridZoneW / 3, gridZoneH / 3 / TILE_ASPECT));
+
+    // Base gaps (calibrated for level 1)
+    const baseColGap = COL_GAP_PX * RENDER_SCALE;
+    const baseRowGap = ROW_GAP_PX * RENDER_SCALE;
+
+    // Fit tiles accounting for negative gaps (overlap gives more room)
+    const fitW = (gridZoneW - (cols - 1) * baseColGap) / cols;
+    const fitTileH = (gridZoneH - (rows - 1) * baseRowGap) / rows;
     const fitH = fitTileH / TILE_ASPECT;
 
-    this.tileW = Math.floor(Math.min(fitW, fitH));
+    // As large as possible, capped at level-1 size
+    this.tileW = Math.floor(Math.min(fitW, fitH, maxTileW));
     this.tileH = Math.floor(this.tileW * TILE_ASPECT);
     this.tileScale = this.tileW / TILE_SRC.w;
+
+    // Scale gaps proportionally to tile size
+    const gapRatio = this.tileW / maxTileW;
+    const colGap = baseColGap * gapRatio;
+    const rowGap = baseRowGap * gapRatio;
     this.colStep = this.tileW + colGap;
     this.rowStep = this.tileH + rowGap;
 
@@ -286,6 +301,46 @@ export class GameScene extends Phaser.Scene {
       sprite.setAlpha(1);
       this.sequenceSprites.push(sprite);
     }
+  }
+
+  private buildPowerupsBar(): void {
+    const containerW = DESIGN_WIDTH;
+    const containerTopY = POWERUPS.topY;
+    const containerH = DESIGN_HEIGHT - containerTopY;
+    const cornerR = s(32);
+
+    const g = this.add.graphics();
+    g.setDepth(DEPTH.SEQUENCE_BAR - 2);
+    g.fillStyle(0x000000, 0.20);
+    g.fillRoundedRect(0, containerTopY, containerW, containerH, {
+      tl: cornerR,
+      tr: cornerR,
+      bl: 0,
+      br: 0,
+    });
+
+    const labelY = containerTopY;
+    const shadowOffset = s(1);
+    const labelStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+      fontFamily: FONT_FAMILY,
+      fontSize: `${s(22)}px`,
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: s(3),
+    };
+    this.add.text(DESIGN_WIDTH / 2, labelY + shadowOffset, "Power-ups", {
+      ...labelStyle,
+      color: "#000000",
+    }).setOrigin(0.5).setDepth(DEPTH.SEQUENCE_BAR);
+    this.add.text(DESIGN_WIDTH / 2, labelY, "Power-ups", labelStyle)
+      .setOrigin(0.5).setDepth(DEPTH.SEQUENCE_BAR);
+
+    const iconsY = labelY + s(18) + s(30);
+    const img = this.add.image(DESIGN_WIDTH / 2, iconsY, "powerups");
+    const maxW = DESIGN_WIDTH * 0.88;
+    const imgScale = Math.min(maxW / img.width, s(60) / (img.height / 4));
+    img.setScale(imgScale);
+    img.setDepth(DEPTH.SEQUENCE_BAR);
   }
 
   private updateSequenceHighlight(): void {
@@ -447,8 +502,7 @@ export class GameScene extends Phaser.Scene {
     const flipDoneMs = delay + FLIP.liftMs + FLIP.dropMs + 100;
     this.time.delayedCall(flipDoneMs, () => {
       this.updateSequenceHighlight();
-      const uiScene = this.scene.get("UIScene");
-      uiScene.events.emit("start-timer");
+      this.events.emit("start-timer");
     });
   }
 
@@ -511,8 +565,7 @@ export class GameScene extends Phaser.Scene {
 
     this.sequenceIndex++;
 
-    const uiScene = this.scene.get("UIScene");
-    uiScene.events.emit("sequence-progress", this.sequenceIndex);
+    this.events.emit("sequence-progress", this.sequenceIndex);
 
     this.updateSequenceHighlight();
 
@@ -531,15 +584,20 @@ export class GameScene extends Phaser.Scene {
     this.combo = 0;
     this.mistakes++;
 
-    tile.sprite.setTint(0xff4444);
-    this.time.delayedCall(300, () => {
-      tile.sprite.clearTint();
+    this.flipTile(tile, `tile_${tile.tileKey}`, () => {
+      tile.sprite.setTint(0xff4444);
+
+      this.time.delayedCall(2000, () => {
+        tile.sprite.clearTint();
+        this.flipTile(tile, BACK_TEXTURE, () => {
+          tile.revealed = false;
+        });
+      });
     });
 
     this.cameras.main.shake(200, 0.008);
 
-    const uiScene = this.scene.get("UIScene");
-    uiScene.events.emit("time-penalty", PENALTY_SECONDS);
+    this.events.emit("time-penalty", PENALTY_SECONDS);
 
     try {
       navigator.vibrate?.([50, 30, 50]);
@@ -589,6 +647,20 @@ export class GameScene extends Phaser.Scene {
         sequenceLength: this.levelDef.sequenceLength,
         sequenceProgress: this.sequenceIndex,
       });
+    });
+  }
+
+  private onDebugSkipLevel(): void {
+    if (this.phase === "RESULT") return;
+    this.phase = "RESULT";
+    this.scene.start("EndScene", {
+      result: "win",
+      levelIdx: this.levelIdx,
+      score: this.score,
+      stars: 3,
+      mistakes: 0,
+      sequenceLength: this.levelDef.sequenceLength,
+      sequenceProgress: this.levelDef.sequenceLength,
     });
   }
 

@@ -133,20 +133,19 @@ export class EndScene extends Phaser.Scene {
   }
 
   private showStars(y: number, count: number): void {
-    const starSize = s(36);
-    const gap = s(12);
+    const starSize = s(44) * 1.7;
+    const gap = s(-15);
     const totalW = 3 * starSize + 2 * gap;
     const startX = (DESIGN_WIDTH - totalW) / 2 + starSize / 2;
 
     for (let i = 0; i < 3; i++) {
       const x = startX + i * (starSize + gap);
       const filled = i < count;
+      const texture = filled ? "star" : "star_disabled";
 
-      const star = this.add.text(x, y, filled ? "★" : "☆", {
-        fontFamily: FONT_FAMILY,
-        fontSize: `${starSize}px`,
-        color: filled ? "#ffdd00" : "#666666",
-      });
+      const star = this.add.image(x, y, texture);
+      const scale = starSize / star.width;
+      star.setScale(scale);
       star.setOrigin(0.5);
       star.setDepth(DEPTH.OVERLAY);
       star.setAlpha(0);
@@ -154,7 +153,7 @@ export class EndScene extends Phaser.Scene {
       this.tweens.add({
         targets: star,
         alpha: 1,
-        scale: { from: 2, to: 1 },
+        scale: { from: scale * 2, to: scale },
         duration: 350,
         delay: 200 + i * 200,
         ease: "Back.easeOut",

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Mahjong — Concept Document</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  :root {
+    --primary: #2d6a4f;
+    --primary-deep: #1b4332;
+    --primary-soft: #52b788;
+    --accent: #e07b1f;
+    --accent-soft: #fff3e0;
+    --ink: #1a2a1a;
+    --muted: #6a7a6a;
+    --rule: #d8e0d8;
+    --bg-card: #f5faf5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    line-height: 1.5;
+    font-size: 10.5pt;
+    margin: 0;
+    padding: 16mm 14mm;
+    max-width: 210mm;
+  }
+  header {
+    border-bottom: 2pt solid var(--primary-deep);
+    padding-bottom: 10pt;
+    margin-bottom: 16pt;
+  }
+  h1 {
+    font-size: 26pt;
+    line-height: 1.05;
+    margin: 0 0 4pt;
+    letter-spacing: -0.02em;
+    color: var(--primary-deep);
+    font-weight: 800;
+  }
+  .tagline {
+    font-size: 12pt;
+    color: var(--primary);
+    margin: 0 0 8pt;
+    font-style: italic;
+  }
+  .meta {
+    font-size: 9pt;
+    color: var(--muted);
+    margin: 0;
+    display: flex;
+    gap: 12pt;
+    flex-wrap: wrap;
+  }
+  .meta span { display: inline-flex; align-items: baseline; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  h2 {
+    font-size: 11pt;
+    margin: 18pt 0 6pt;
+    color: var(--primary-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    border-bottom: 1pt solid var(--rule);
+    padding-bottom: 2pt;
+  }
+  h3 {
+    font-size: 10.5pt;
+    margin: 10pt 0 3pt;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  p { margin: 0 0 6pt; }
+  ul { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  li strong { color: var(--primary-deep); }
+  .card {
+    background: var(--bg-card);
+    border-left: 3pt solid var(--primary);
+    padding: 8pt 12pt;
+    margin: 4pt 0 8pt;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .pill {
+    display: inline-block;
+    padding: 1pt 7pt;
+    border-radius: 8pt;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 8.5pt;
+    font-weight: 700;
+    margin-right: 3pt;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .cta {
+    margin: 14pt 0;
+    padding: 12pt 16pt;
+    background: var(--primary-deep);
+    color: #fff;
+    border-radius: 6pt;
+    display: flex;
+    flex-direction: column;
+    gap: 4pt;
+  }
+  .cta .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0.7;
+  }
+  .cta a {
+    color: #fff;
+    font-weight: 700;
+    font-size: 13pt;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14pt;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin: 4pt 0 8pt;
+  }
+  th {
+    background: var(--primary-deep);
+    color: #fff;
+    padding: 4pt 8pt;
+    text-align: left;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 3pt 8pt;
+    border-bottom: 0.5pt solid var(--rule);
+  }
+  tr:nth-child(even) td { background: #f8faf8; }
+  .footer {
+    margin-top: 22pt;
+    padding-top: 10pt;
+    border-top: 1pt solid var(--rule);
+    font-size: 8.5pt;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+  @media print {
+    body { padding: 0; }
+    .pagebreak { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Memory Mahjong</h1>
+  <p class="tagline">Casual memory game: memorize the tile board and reproduce the sequence in the right order.</p>
+  <p class="meta">
+    <span><b>Type</b>&nbsp;·&nbsp;Casual / Memory (single screen)</span>
+    <span><b>Platform</b>&nbsp;·&nbsp;Web mobile-first (Phaser 3)</span>
+    <span><b>Status</b>&nbsp;·&nbsp;Playable prototype</span>
+    <span><b>Session</b>&nbsp;·&nbsp;~2-4 min per game</span>
+  </p>
+</header>
+
+<h2>Concept</h2>
+<p>
+  A board of mahjong-styled tiles is presented face down. At the start of each level, all tiles
+  flip face up for a few seconds. The player must memorize the positions and, once hidden,
+  reproduce a specific sequence by tapping tiles in the order shown in the objective bar.
+  Each mistake flips the wrong tile face up for 2 seconds and applies a <strong>time penalty</strong>.
+  The dual challenge: remember where each tile is AND maintain the sequence order under time pressure.
+</p>
+
+<h2>Design Pillars</h2>
+<div class="grid-2">
+  <div>
+    <h3>1. Spatial + Sequential Memory</h3>
+    <p>
+      Players exercise two types of memory simultaneously: remembering each tile's position
+      on the board (spatial) and reproducing them in a specific order (sequential). This combination
+      creates a deeper cognitive challenge than a simple memory match.
+    </p>
+  </div>
+  <div>
+    <h3>2. Progressive Time Pressure</h3>
+    <p>
+      Memorization time decreases level by level (from 5s to 2.5s) while sequences grow longer.
+      The timer creates urgency without being punishing in early levels, but becomes
+      the deciding factor in advanced stages.
+    </p>
+  </div>
+  <div>
+    <h3>3. Informative Failure</h3>
+    <p>
+      When you fail, the tile flips showing what was underneath. Players gain useful information
+      with each mistake, turning failures into learning opportunities within the same run.
+      But the time cost makes abusing this strategy lethal.
+    </p>
+  </div>
+  <div>
+    <h3>4. Instant Visual Readability</h3>
+    <p>
+      No tutorials or explanations needed. Recognizable mahjong tiles, clear icons, visible
+      objective bar. Anyone understands the mechanic in 3 seconds: memorize, remember,
+      tap in order.
+    </p>
+  </div>
+</div>
+
+<h2>Game Flow</h2>
+<div class="card">
+  <strong>3 phases per level:</strong>
+  <span class="pill">Entry</span> Tiles fly onto the board with cascading animation.
+  <span class="pill">Memorize</span> All tiles flip face up for X seconds with visible countdown.
+  <span class="pill">Recall</span> Tiles hide. Player taps in the objective sequence order. Timer active.
+</div>
+
+<h2>Level Structure</h2>
+<table>
+  <tr><th>Level</th><th>Grid</th><th>Sequence</th><th>Memorize</th><th>Timer</th></tr>
+  <tr><td>1</td><td>3×3</td><td>3 tiles</td><td>5.0s</td><td>30s</td></tr>
+  <tr><td>2</td><td>3×4</td><td>3 tiles</td><td>5.0s</td><td>30s</td></tr>
+  <tr><td>3</td><td>3×4</td><td>4 tiles</td><td>4.5s</td><td>35s</td></tr>
+  <tr><td>4</td><td>4×4</td><td>4 tiles</td><td>4.5s</td><td>35s</td></tr>
+  <tr><td>5</td><td>4×4</td><td>5 tiles</td><td>4.0s</td><td>40s</td></tr>
+  <tr><td>6</td><td>4×5</td><td>5 tiles</td><td>4.0s</td><td>40s</td></tr>
+  <tr><td>7</td><td>4×5</td><td>6 tiles</td><td>3.5s</td><td>45s</td></tr>
+  <tr><td>8</td><td>5×5</td><td>6 tiles</td><td>3.0s</td><td>45s</td></tr>
+  <tr><td>9</td><td>5×5</td><td>7 tiles</td><td>3.0s</td><td>50s</td></tr>
+  <tr><td>10</td><td>5×5</td><td>8 tiles</td><td>2.5s</td><td>55s</td></tr>
+</table>
+
+<h2>Difficulty Scaling</h2>
+<table>
+  <tr><th>Factor</th><th>Easy (L1-3)</th><th>Medium (L4-6)</th><th>Hard (L7-10)</th></tr>
+  <tr><td>Board tiles</td><td>9-12</td><td>16-20</td><td>20-25</td></tr>
+  <tr><td>Sequence length</td><td>3-4</td><td>4-5</td><td>6-8</td></tr>
+  <tr><td>Memorization time</td><td>5.0s</td><td>4.0-4.5s</td><td>2.5-3.5s</td></tr>
+  <tr><td>Error penalty</td><td>3s</td><td>3s</td><td>3s + 2s lockout</td></tr>
+  <tr><td>Unique tiles</td><td>9-12</td><td>16-20</td><td>24+</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+
+<h2>Power-ups</h2>
+<div class="grid-2">
+  <div>
+    <h3>Key <span class="pill">Peek</span></h3>
+    <p>
+      Temporarily flips a tile of the player's choice for 1 second.
+      Ideal for confirming a doubtful position without risking an error.
+    </p>
+  </div>
+  <div>
+    <h3>Scissors <span class="pill">Skip</span></h3>
+    <p>
+      Skips the current tile in the sequence, marking it as automatically completed.
+      Saves the run when you can't remember a position.
+    </p>
+  </div>
+  <div>
+    <h3>Compass <span class="pill">Hint</span></h3>
+    <p>
+      Briefly highlights the next correct tile with a visual pulse.
+      The player knows where it is, but still needs to tap it.
+    </p>
+  </div>
+  <div>
+    <h3>Flag <span class="pill">Freeze</span></h3>
+    <p>
+      Freezes the timer for 5 seconds. Provides breathing room in
+      high-pressure moments without revealing board information.
+    </p>
+  </div>
+</div>
+
+<h2>Progression & Retention</h2>
+<div class="grid-2">
+  <div>
+    <h3>Star System</h3>
+    <p>
+      1-3 stars per level based on mistakes made and remaining time.
+      3 stars = 0 mistakes + more than 50% time remaining.
+      Accumulated stars unlock themed worlds.
+    </p>
+    <h3>Combos</h3>
+    <p>
+      Consecutive correct taps build a score multiplier (2x-5x).
+      Visual combo feedback floats above the board. A single mistake
+      resets the multiplier to 1x.
+    </p>
+  </div>
+  <div>
+    <h3>Themed Worlds</h3>
+    <p>
+      Expansion into themed tile sets: animals, food, emojis,
+      flags. Each world with its own aesthetic: background, tile style,
+      effects. Unlocked by accumulating stars.
+    </p>
+    <h3>Long-term Retention</h3>
+    <ul>
+      <li><strong>Daily challenge:</strong> random level with global leaderboard.</li>
+      <li><strong>Streak:</strong> playing X consecutive days unlocks power-ups.</li>
+      <li><strong>Collectibles:</strong> seasonal limited-edition tile sets.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Future Mechanics</h2>
+<ul>
+  <li><strong>Special tiles:</strong> bomb (reveals adjacent tiles on hit), wildcard (matches any tile), ice (requires double tap).</li>
+  <li><strong>Time attack mode:</strong> endless sequences with limited time. Increasing speed.</li>
+  <li><strong>Duel mode:</strong> two players compete to complete the same sequence on mirrored boards.</li>
+  <li><strong>Seasonal events:</strong> special themed tiles (Halloween, Christmas) with unique mechanics.</li>
+</ul>
+
+<h2>Controls</h2>
+<p>
+  <strong>Mobile (primary):</strong> direct tap on board tiles. Haptic feedback on correct taps
+  (short vibration) and errors (double vibration). Tiles flip with simulated 3D animation
+  (horizontal squeeze + lift).
+  <strong>Desktop:</strong> click on tiles. Same visual feedback.
+</p>
+
+<h2>Aesthetics</h2>
+<ul>
+  <li><strong>Tiles:</strong> classic mahjong style with illustrated icons. Bottom shadow simulating depth. Mystery back with question mark.</li>
+  <li><strong>Board:</strong> textured green background with vignette. Tiles with no visible gaps (edges touching).</li>
+  <li><strong>HUD:</strong> top bar with level, timer with progress bar, sequence indicators (pills).</li>
+  <li><strong>Animations:</strong> diagonal cascade entry, flip with lift and shadow, shake on error, floating combo text.</li>
+  <li><strong>Typography:</strong> Lilita One throughout the game.</li>
+</ul>
+
+<div class="cta">
+  <span class="label">Playable prototype</span>
+  <a href="https://memory-mahjong.vercel.app/preview.html">memory-mahjong.vercel.app/preview</a>
+</div>
+
+<h2>Tech Stack</h2>
+<p>
+  Phaser 3 (WebGL) · Vite · TypeScript · Fluid viewport 390×844 · LocalStorage for progress · Vercel deploy · PWA-ready
+</p>
+
+<div class="footer">
+  <span>Memory Mahjong — Concept document v1.0</span>
+  <span>May 2026</span>
+</div>
+
+</body>
+</html>
