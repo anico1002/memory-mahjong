@@ -1,14 +1,6 @@
 import Phaser from "phaser";
 import "./style.css";
-
-function setVh() {
-  const vh = (window.visualViewport?.height ?? window.innerHeight) * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-setVh();
-window.visualViewport?.addEventListener('resize', setVh);
-window.addEventListener('orientationchange', () => setTimeout(setVh, 150));
-import { DESIGN_WIDTH, DESIGN_HEIGHT } from "./config/GameConfig";
+import { DESIGN_WIDTH, DESIGN_HEIGHT, RENDER_SCALE } from "./config/GameConfig";
 import { BootScene } from "./scenes/BootScene";
 import { StartScene } from "./scenes/StartScene";
 import { GameScene } from "./scenes/GameScene";
@@ -35,6 +27,24 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const game = new Phaser.Game(config);
+
+function resizeGame() {
+  const w = window.visualViewport?.width ?? window.innerWidth;
+  const h = window.visualViewport?.height ?? window.innerHeight;
+  const dpr = RENDER_SCALE;
+  game.scale.resize(w * dpr, h * dpr);
+  game.canvas.style.width = w + "px";
+  game.canvas.style.height = h + "px";
+}
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", resizeGame);
+} else {
+  window.addEventListener("resize", resizeGame);
+}
+
+setTimeout(resizeGame, 100);
+setTimeout(resizeGame, 300);
 
 const inIframe = window.self !== window.top;
 
