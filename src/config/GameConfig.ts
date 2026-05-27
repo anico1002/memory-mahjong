@@ -9,6 +9,9 @@ function readViewport(): { w: number; h: number } {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return { w: REFERENCE_WIDTH, h: REFERENCE_HEIGHT };
   }
+  if (window.visualViewport) {
+    return { w: window.visualViewport.width, h: window.visualViewport.height };
+  }
   const el = document.getElementById("game");
   if (el) {
     const rect = el.getBoundingClientRect();
@@ -40,7 +43,15 @@ function readSafeInset(varName: string): number {
   const raw = getComputedStyle(document.documentElement)
     .getPropertyValue(varName)
     .trim();
-  if (!raw) return 0;
+  if (!raw) {
+    // Fallback default safe insets for notched iPhones / modern mobile devices during early page load
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      if (varName === "--safe-top") return 47; // notch / dynamic island height
+      if (varName === "--safe-bottom") return 34; // home indicator height
+    }
+    return 0;
+  }
   const parsed = parseFloat(raw);
   return Number.isFinite(parsed) ? parsed : 0;
 }

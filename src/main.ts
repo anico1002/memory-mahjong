@@ -1,5 +1,13 @@
 import Phaser from "phaser";
 import "./style.css";
+
+function setVh() {
+  const vh = (window.visualViewport?.height ?? window.innerHeight) * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+setVh();
+window.visualViewport?.addEventListener('resize', setVh);
+window.addEventListener('orientationchange', () => setTimeout(setVh, 150));
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from "./config/GameConfig";
 import { BootScene } from "./scenes/BootScene";
 import { StartScene } from "./scenes/StartScene";
